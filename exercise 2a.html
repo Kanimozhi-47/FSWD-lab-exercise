@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Food Delivery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #fff8f0;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #e67e22;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #e67e22;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #d35400;
+        }
+
+        .menu-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff3e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #cart {
+            border-top: 2px solid #e67e22;
+            padding-top: 10px;
+            background-color: #fff3e6;
+            border-radius: 5px;
+        }
+
+        input[type='number'] {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🍔 Delicious Foods</h1>
+
+<!-- Select Restaurant -->
+<label>Select Restaurant:</label>
+<select id="restaurantSelect" onchange="showMenu()">
+    <option>Pizza Palace</option>
+    <option>Burger Hub</option>
+    <option>Sushi World</option>
+</select>
+
+<h2>Menu</h2>
+<div id="menuContainer"></div>
+
+<h2>Cart</h2>
+<div id="cart">Cart is empty.</div>
+
+<button onclick="placeOrder()">Place Order</button>
+
+<script>
+    var restaurants = {
+        "Pizza Palace": [
+            {name: "Margherita Pizza", price: 5},
+            {name: "Pepperoni Pizza", price: 6},
+            {name: "Veggie Pizza", price: 5.5}
+        ],
+        "Burger Hub": [
+            {name: "Cheeseburger", price: 4},
+            {name: "Veggie Burger", price: 3.5},
+            {name: "Fries", price: 2}
+        ],
+        "Sushi World": [
+            {name: "California Roll", price: 8},
+            {name: "Salmon Nigiri", price: 7},
+            {name: "Miso Soup", price: 3}
+        ]
+    };
+
+    var cart = [];
+
+    function showMenu() {
+        var restaurant = document.getElementById("restaurantSelect").value;
+        var menuContainer = document.getElementById("menuContainer");
+        menuContainer.innerHTML = "";
+
+        var menu = restaurants[restaurant];
+        for (var i = 0; i < menu.length; i++) {
+            var itemDiv = document.createElement("div");
+            itemDiv.className = "menu-item";
+            itemDiv.innerHTML = menu[i].name + " - $" + menu[i].price +
+                " <input type='number' id='qty" + i + "' value='0' min='0' onchange='updateCart()'>";
+            menuContainer.appendChild(itemDiv);
+        }
+        updateCart();
+    }
+
+    function updateCart() {
+        cart = [];
+        var restaurant = document.getElementById("restaurantSelect").value;
+        var menu = restaurants[restaurant];
+        var cartDiv = document.getElementById("cart");
+        cartDiv.innerHTML = "";
+
+        var total = 0;
+        for (var i = 0; i < menu.length; i++) {
+            var qty = document.getElementById("qty" + i).value;
+            qty = parseInt(qty);
+            if (qty > 0) {
+                cart.push({name: menu[i].name, price: menu[i].price, quantity: qty});
+                var itemTotal = menu[i].price * qty;
+                total += itemTotal;
+                cartDiv.innerHTML += menu[i].name + " x " + qty + " = $" + itemTotal + "<br>";
+            }
+        }
+
+        if (cart.length == 0) {
+            cartDiv.innerHTML = "Cart is empty.";
+        } else {
+            cartDiv.innerHTML += "<b>Total: $" + total + "</b>";
+        }
+    }
+
+    function placeOrder() {
+        if (cart.length == 0) {
+            alert("Cart is empty!");
+            return;
+        }
+
+        var orderText = "Your order:\n";
+        var total = 0;
+        for (var i = 0; i < cart.length; i++) {
+            orderText += cart[i].name + " x " + cart[i].quantity + " = $" + (cart[i].price * cart[i].quantity) + "\n";
+            total += cart[i].price * cart[i].quantity;
+        }
+        orderText += "Total: $" + total + "\nThank you for ordering!";
+        alert(orderText);
+
+        showMenu(); // reset quantities and cart
+    }
+
+    showMenu();
+</script>
+
+</body>
+</html>
