@@ -1,107 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Twitter Blog</title>
+    <title>Microblog App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f8fa;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background-color: #1da1f2;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 24px;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
-        }
-
-        .tweet-box {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 80px;
+            max-width: 700px;
+            margin: 50px auto;
             padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            resize: none;
-            font-size: 16px;
         }
-
-        button {
-            background-color: #1da1f2;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-top: 10px;
-            border-radius: 5px;
-            cursor: pointer;
+        h1, h2 {
+            text-align: center;
         }
-
-        .feed {
-            margin-top: 20px;
+        select, textarea, button, input {
+            width: 100%;
+            margin: 5px 0;
+            padding: 5px;
         }
-
         .post {
-            background-color: white;
-            padding: 15px;
-            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
             margin-bottom: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            background: #f9f9f9;
         }
     </style>
 </head>
 <body>
-    <header>
-        Mini Twitter Blog
-    </header>
 
-    <div class="container">
-        <div class="tweet-box">
-            <textarea id="tweetInput" placeholder="What's happening?"></textarea>
-            <button onclick="postTweet()">Tweet</button>
-        </div>
+<h1>Simple Microblog App</h1>
 
-        <div class="feed" id="feed">
-            <!-- Tweets will appear here -->
-        </div>
-    </div>
+<input type="text" id="newUser" placeholder="Add new user name">
+<button onclick="addUser()">Add User</button>
 
-    <script>
-        function postTweet() {
-            const input = document.getElementById('tweetInput');
-            const feed = document.getElementById('feed');
 
-            if (input.value.trim() !== "") {
-                const post = document.createElement('div');
-                post.className = 'post';
-                post.textContent = input.value;
+<label for="currentUser">Select User:</label>
+<select id="currentUser"></select>
 
-                // Add new post on top
-                feed.prepend(post);
+<h2>Follow Users</h2>
+<select id="followSelect" multiple></select>
+<button onclick="updateFollowing()">Follow Selected Users</button>
 
-                // Clear textarea
-                input.value = "";
-            } else {
-                alert("Please write something before tweeting!");
+<h2>Create Post</h2>
+<textarea id="postContent" placeholder="Write something..."></textarea>
+<button onclick="addPost()">Post</button>
+
+<h2>Feed</h2>
+<div id="feedContainer"></div>
+
+<script>
+    let users = [];
+    let posts = [];
+    let following = {}; 
+
+    function addUser() {
+        const name = document.getElementById("newUser").value.trim();
+        if(name === "") { alert("User name cannot be empty!"); return; }
+        if(users.includes(name)) { alert("User already exists!"); return; }
+
+        users.push(name);
+        following[name] = []; 
+        document.getElementById("newUser").value = "";
+        updateUserSelect();
+    }
+
+    function updateUserSelect() {
+        const userSelect = document.getElementById("currentUser");
+        userSelect.innerHTML = "";
+        users.forEach(u => {
+            const option = document.createElement("option");
+            option.value = u;
+            option.text = u;
+            userSelect.appendChild(option);
+        });
+        updateFollowSelect();
+        showFeed();
+    }
+
+    function updateFollowSelect() {
+        const followSelect = document.getElementById("followSelect");
+        followSelect.innerHTML = "";
+        const currentUser = document.getElementById("currentUser").value;
+        users.forEach(u => {
+            if(u !== currentUser) {
+                const option = document.createElement("option");
+                option.value = u;
+                option.text = u;
+                if(following[currentUser].includes(u)) option.selected = true;
+                followSelect.appendChild(option);
             }
+        });
+    }
+
+    document.getElementById("currentUser").addEventListener("change", () => {
+        updateFollowSelect();
+        showFeed();
+    });
+
+    function updateFollowing() {
+        const currentUser = document.getElementById("currentUser").value;
+        const followSelect = document.getElementById("followSelect");
+        following[currentUser] = Array.from(followSelect.selectedOptions).map(o => o.value);
+        showFeed();
+    }
+
+    function addPost() {
+        const user = document.getElementById("currentUser").value;
+        const content = document.getElementById("postContent").value.trim();
+        if(content === "") { alert("Post cannot be empty!"); return; }
+
+        posts.push({user: user, content: content});
+        document.getElementById("postContent").value = "";
+        showFeed();
+    }
+
+    function showFeed() {
+        const currentUser = document.getElementById("currentUser").value;
+        const container = document.getElementById("feedContainer");
+        container.innerHTML = "";
+
+       
+        const visiblePosts = posts.filter(post => following[currentUser].includes(post.user));
+
+        if(visiblePosts.length === 0){
+            container.innerHTML = "<p>No posts from users you follow yet.</p>";
+            return;
         }
-    </script>
+
+        visiblePosts.reverse().forEach(post => {
+            const postDiv = document.createElement("div");
+            postDiv.className = "post";
+            postDiv.innerHTML = `<strong>${post.user}</strong>: ${post.content}`;
+            container.appendChild(postDiv);
+        });
+    }
+</script>
+
 </body>
 </html>
