@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Classifieds Web App</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #f0f8ff; /* Light blue background */
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        select, input, textarea, button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1e8449;
+        }
+
+        .product {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fffacd; /* Light yellow card */
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 2px 2px 5px #aaa;
+        }
+
+        .product h3 {
+            margin: 0;
+            color: #2980b9;
+        }
+
+        .product p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Classifieds - Buy & Sell</h1>
+
+<h2>Register / Add User</h2>
+<input type="text" id="newUser" placeholder="Enter user name">
+<button onclick="addUser()">Add User</button>
+
+<h2>Select User</h2>
+<select id="currentUser" onchange="showProducts()"></select>
+
+<h2>Post a Product</h2>
+<input type="text" id="productName" placeholder="Product Name">
+<input type="number" id="productPrice" placeholder="Price">
+<textarea id="productDesc" placeholder="Description"></textarea>
+<button onclick="addProduct()">Add Product</button>
+
+<h2>Products for Sale</h2>
+<div id="productList"><p>No products listed yet.</p></div>
+
+<script>
+    var users = [];
+    var currentUser = "";
+    var products = [];
+
+    function addUser() {
+        var name = document.getElementById("newUser").value.trim();
+        if(name === "") { alert("Enter user name!"); return; }
+        if(users.indexOf(name) !== -1) { alert("User already exists!"); return; }
+        users.push(name);
+        document.getElementById("newUser").value = "";
+        updateUserSelect();
+    }
+
+    function updateUserSelect() {
+        var select = document.getElementById("currentUser");
+        select.innerHTML = "";
+        for(var i=0; i<users.length; i++) {
+            var option = document.createElement("option");
+            option.value = users[i];
+            option.text = users[i];
+            select.appendChild(option);
+        }
+        if(users.length > 0) {
+            currentUser = select.value;
+        }
+        showProducts();
+    }
+
+    document.getElementById("currentUser").addEventListener("change", function() {
+        currentUser = this.value;
+        showProducts();
+    });
+
+    function addProduct() {
+        var name = document.getElementById("productName").value.trim();
+        var price = document.getElementById("productPrice").value.trim();
+        var desc = document.getElementById("productDesc").value.trim();
+
+        if(name === "" || price === "" || desc === "") {
+            alert("Fill all product details!");
+            return;
+        }
+
+        products.push({
+            seller: currentUser,
+            name: name,
+            price: parseFloat(price),
+            desc: desc
+        });
+
+        document.getElementById("productName").value = "";
+        document.getElementById("productPrice").value = "";
+        document.getElementById("productDesc").value = "";
+
+        showProducts();
+    }
+
+    function showProducts() {
+        var listDiv = document.getElementById("productList");
+        listDiv.innerHTML = "";
+
+        if(products.length === 0) {
+            listDiv.innerHTML = "<p>No products listed yet.</p>";
+            return;
+        }
+
+        for(var i=0; i<products.length; i++) {
+            var p = products[i];
+            var div = document.createElement("div");
+            div.className = "product";
+            div.innerHTML = "<h3>" + p.name + "</h3>" +
+                            "<p>Price: $" + p.price + "</p>" +
+                            "<p>" + p.desc + "</p>" +
+                            "<p>Seller: " + p.seller + "</p>";
+            if(p.seller !== currentUser) {
+                var buyBtn = document.createElement("button");
+                buyBtn.innerText = "Buy";
+                buyBtn.setAttribute("onclick", "buyProduct(" + i + ")");
+                div.appendChild(buyBtn);
+            } else {
+                div.innerHTML += "<p><i>Your product</i></p>";
+            }
+            listDiv.appendChild(div);
+        }
+    }
+
+    function buyProduct(index) {
+        alert(currentUser + " bought " + products[index].name + " from " + products[index].seller + " for $" + products[index].price);
+        products.splice(index,1);
+        showProducts();
+    }
+
+</script>
+
+</body>
+</html>
