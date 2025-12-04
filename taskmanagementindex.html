@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Task Dashboard</title>
+</head>
+<body>
+
+<h2>Project Task Dashboard</h2>
+
+<p>Add Task:</p>
+<input id="taskName">
+<button onclick="addTask()">Add</button>
+
+<h3>Tasks:</h3>
+<div id="tasks"></div>
+
+<script>
+var api = "http://localhost:5000";
+
+// 1. Show tasks
+function loadTasks() {
+    fetch(api + "/tasks")
+    .then(res => res.json())
+    .then(list => {
+        var area = document.getElementById("tasks");
+        area.innerHTML = "";
+        
+        list.forEach(task => {
+            area.innerHTML += 
+                "<p>" + task.title + 
+                " - " + task.status +
+                " <select onchange=\"updateTask('" + task._id + "', this.value)\">" +
+                "<option>Pending</option>" +
+                "<option>InProgress</option>" +
+                "<option>Completed</option>" +
+                "</select>" +
+                "</p>";
+        });
+    });
+}
+
+// 2. Add task
+function addTask() {
+    var name = document.getElementById("taskName").value;
+
+    fetch(api + "/add", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ title: name })
+    }).then(() => loadTasks());
+}
+
+// 3. Update task
+function updateTask(id, status) {
+    fetch(api + "/update/" + id, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ status: status })
+    }).then(() => loadTasks());
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
